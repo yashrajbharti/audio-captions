@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Auto Captions</title>
+    <script src="https://cdn.jsdelivr.net/npm/@deepgram/sdk"></script>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@deepgram/sdk/+esm';
+        window.deepgram = createClient('your-deepgram-api-key');
+    </script>
+    <script type="module" src="./src/video-auto-captions.js"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            color: white;
+            background-color: black;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Video Auto Captions Demo</h1>
+    <video-auto-captions src="./video/sample.mp4"></video-auto-captions>
+</body>
+
+</html>
