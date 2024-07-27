@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player with Speech Recognition</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 50px;
+        }
+
+        video {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .captions {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            font-size: 16px;
+            color: #000;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <video id="videoPlayer" controls>
+            <source src="./video/sample.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <div id="captions" class="captions">Captions will appear here...</div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert('Web Speech API is not supported in this browser.');
+            } else {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                const recognition = new SpeechRecognition();
+
+                recognition.continuous = true; // Keep recognizing in a continuous flow
+                recognition.interimResults = true; // Get interim results as well
+                recognition.lang = 'en-US';
+
+                const videoElement = document.getElementById('videoPlayer'); // Ensure this element exists
+                const captionsElement = document.getElementById('captions');
+                let isRecognizing = false;
+
+                recognition.onstart = () => {
+                    console.log("Speech recognition service has started");
+                    isRecognizing = true;
+                };
+
+                recognition.onresult = (event) => {
+                    let transcript = "";
+                    for (let i = 0; i < event.results.length; i++) {
+                        transcript += event.results[i][0].transcript;
+                    }
+                    captionsElement.textContent = transcript;
+                    console.log("Transcript: ", transcript);
+                };
+
+                recognition.onerror = (event) => {
+                    console.error("Speech recognition error:", event.error);
+                    isRecognizing = false;
+                };
+
+                recognition.onend = () => {
+                    console.log("Speech recognition ended.");
+                    isRecognizing = false;
+                    // Automatically restart recognition if the video is playing
+                    if (!videoElement.paused) {
+                        recognition.start();
+                    }
+                };
+
+                videoElement.onplay = async () => {
+                    console.log("Video play event");
+
+                    // Create AudioContext and MediaElementAudioSourceNode
+                    const audioContext = new AudioContext();
+                    const source = audioContext.createMediaElementSource(videoElement);
+
+                    // Connect to the destination (speakers)
+                    source.connect(audioContext.destination);
+
+                    // Optional: Create an AnalyserNode to visualize audio (not necessary for transcription)
+                    const analyser = audioContext.createAnalyser();
+                    source.connect(analyser);
+
+                    // Start recognition if not already started
+                    if (!isRecognizing) {
+                        recognition.start();
+                    }
+                };
+
+                videoElement.onpause = () => {
+                    console.log("Video pause event");
+                    if (isRecognizing) {
+                        recognition.stop();
+                    }
+                };
+
+                videoElement.onended = () => {
+                    console.log("Video ended event");
+                    if (isRecognizing) {
+                        recognition.stop();
+                    }
+                };
+            }
+        });
+    </script>
+</body>
+
+</html>
